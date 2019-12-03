@@ -1,5 +1,6 @@
 package com.chushiyan.validation_tutorial.pojo;
 
+import com.chushiyan.validation_tutorial.validate.GroupA;
 import lombok.Data;
 
 import javax.validation.constraints.*;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @Data
 public class User implements Serializable {
 
+    @NotNull(groups = GroupA.class, message = "id不能为空")
     private String id;
 
     @NotNull(message = "姓名不能为空")
@@ -25,4 +27,5 @@ public class User implements Serializable {
 
     @Email(message = "邮箱格式不正确")
     private String email;
+
 }

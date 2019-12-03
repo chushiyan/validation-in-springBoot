@@ -2,6 +2,7 @@ package com.chushiyan.validation_tutorial.handler;
 
 
 import com.chushiyan.validation_tutorial.entity.Result;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
@@ -38,7 +39,7 @@ public class GlobalExceptionHandler {
 
         // 获取所有异常
         List<String> errors = new LinkedList<String>();
-        if(ex instanceof ConstraintViolationException){
+        if (ex instanceof ConstraintViolationException) {
             ConstraintViolationException exs = (ConstraintViolationException) ex;
             Set<ConstraintViolation<?>> violations = exs.getConstraintViolations();
             for (ConstraintViolation<?> item : violations) {
@@ -70,6 +71,8 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
         body.put("errors", errors);
         return new Result(false, 20001, "提交的数据校验失败", body);
+//        return new Result(false, 20001, StringUtils.join(errors.toArray(), " "), body);
+
     }
 
     /**

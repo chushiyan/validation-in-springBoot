@@ -321,6 +321,7 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(value = ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleBindException(ValidationException ex) {
 
         Map<String, Object> body = new LinkedHashMap<String, Object>();
@@ -360,4 +361,81 @@ postman 测试http://localhost:10000/user GET
     }
 }
 ```
+
+
+
+
+
+
+
+## 四、参数校验分组
+
+在实际开发中经常会遇到这种情况：添加用户时，id是由后端生成的，不需要校验id是否为空，但是修改用户时就需要校验id是否为空。如果在接收参数的User实体类的id属性上添加NotNull，显然无法实现。这时候就可以定义分组，在需要校验id的时候校验，不需要的时候不校验。
+
+### （一）定义表示组别的接口类
+
+```java
+package com.chushiyan.validation_tutorial.validate;
+public interface GroupA {
+}
+```
+
+### （二）在实体类的注解中标记password使用上面定义的组
+
+给id属性添加分组：
+
+```java
+package com.chushiyan.validation_tutorial.pojo;
+
+import com.chushiyan.validation_tutorial.validate.GroupA;
+import lombok.Data;
+
+import javax.validation.constraints.*;
+import java.io.Serializable;
+
+/**
+ * @author chushiyan
+ * @email  Y2h1c2hpeWFuMDQxNUAxNjMuY29t(base64)
+ * @description
+ */
+@Data
+public class User implements Serializable {
+
+    @NotNull(groups = GroupA.class, message = "id不能为空")
+    private String id;
+
+    @NotNull(message = "姓名不能为空")
+    @Size(min = 1, max = 20, message = "姓名长度必须在1-20之间")
+    private String name;
+
+    @Min(value = 10, message = "年龄必须大于10")
+    @Max(value = 150, message = "年龄必须小于150")
+    private Integer age;
+
+    @Email(message = "邮箱格式不正确")
+    private String email;
+}
+```
+
+
+
+### （三）在controller中使用@Validated指定使用哪个组
+
+
+
+```java
+    @PostMapping
+    public Result add(@Validated @RequestBody User user) {
+        return new Result(true, 200, "增加用户成功");
+    }
+
+    @PutMapping("/update")
+	// 指定GroupA，这样就会校验id属性是否为空
+	// 注意：还得必须添加Default.class，否则不会执行其他的校验（如我们案例中的@Email）
+    public Result update(@Validated({GroupA.class, Default.class}) @RequestBody User user) {
+        return new Result(true, 200, "修改用户成功");
+    }
+```
+
+
 
